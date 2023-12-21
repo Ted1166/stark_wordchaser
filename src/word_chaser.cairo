@@ -32,9 +32,16 @@ mod WordChaser {
         word: felt252
     }
 
+    #[derive(Drop)]
+    enum Status {
+        Completed,
+        Inprogress,
+        Failed,
+    }
+
     #[derive(Copy, Drop, Serde, starknet::store)]
     struct Letter {
-        letter: char,
+        letter: felt252,
         is_revealed: bool
     }
 
