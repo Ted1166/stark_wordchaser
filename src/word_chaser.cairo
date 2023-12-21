@@ -1,6 +1,6 @@
 #[starknet::interface]
 trait wordchaserTrait<TContractState> {
-    fn create_unknown_word(self:@TContractState) -> Vocabulary;
+    fn create_unknown_word(self:@TContractState, example:felt252, meaning:felt252, word:felt252);
     fn get_letters(ref self:@TContractState, key:u128) -> Array<Letter>;
     fn display_progress(ref self:@TContractState, key:u128) -> Letter;
 }
@@ -16,6 +16,7 @@ mod WordChaser {
     struct Storage {
         completed: LegacyMap<CompletedWord>, 
         letters: LegacyMap<Letter>,
+        vocabulary: LegacyMap<u128, Vocabulary>
     }
 
     #[derive(Copy, Drop, Serde, starknet::store)]
@@ -62,4 +63,10 @@ mod WordChaser {
         is_revealed: bool
     }
 
+    #[external(v0)]
+    impl wordchaserImpl of wordchaserTrait<ContractState> {
+        fn create_unknown_word(self:@TContractState, example:felt252, meaning:felt252, word:felt252) {
+            
+        }
+    }
 }
