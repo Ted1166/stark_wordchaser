@@ -1,8 +1,9 @@
 #[starknet::interface]
 trait wordchaserTrait<TContractState> {
-    fn create_unknown_word(self:@TContractState, example:felt252, meaning:felt252, word:felt252);
-    fn get_letters(ref self:@TContractState, key:u128) -> Array<Letter>;
-    fn display_progress(ref self:@TContractState, key:u128) -> Letter;
+    fn register_player(ref self: TContractState, username: felt252);
+    fn create_unknown_word(self: @TContractState, example:felt252, meaning:felt252, word:felt252);
+    fn get_letters(ref self: TContractState, key:u128) -> Array<Letter>;
+    fn display_progress(ref self: TContractState, key:u128) -> Letter;
 }
 
 #[starknet::contract]
@@ -14,9 +15,12 @@ mod WordChaser {
 
     #[storage]
     struct Storage {
-        completed: LegacyMap<CompletedWord>, 
-        letters: LegacyMap<Letter>,
-        vocabulary: LegacyMap<u128, Vocabulary>
+        completed: LegacyMap<u128, CompletedWord>, 
+        letters: LegacyMap<u128, Letter>,
+        letters_count: u128,
+        vocabulary: LegacyMap<u128, Vocabulary>,
+        player: LegacyMap<u128, Player>,
+        player_count: u128
     }
 
     #[derive(Copy, Drop, Serde, starknet::store)]
@@ -56,17 +60,41 @@ mod WordChaser {
 
     #[derive(Copy, Drop, Serde, starknet::store)]
     struct Player {
-        userid: felt252,
+        userid: ContractAddress,
+        username: felt252
         guess: felt252,
         word_progress: felt252,
         turns: u128,
-        is_revealed: bool
+        // is_revealed: bool
     }
 
     #[external(v0)]
-    impl wordchaserImpl of wordchaserTrait<ContractState> {
-        fn create_unknown_word(self:@TContractState, example:felt252, meaning:felt252, word:felt252) {
-            
+    impl wordchaserImpl of super::wordchaserTrait<ContractState> {
+        fn register_player(ref self: TContractState, username: felt252) {
+            let player_id: ContractAddress = get_caller_address();
+            let player: Player = Player {
+                id: player_id, username: username, guess: guess, word_progress: word_progress,turns: 0
+            };
+            self.player_count.write(self.player_count.read() + 1);
+            self.player.write(self.player_count.read(), player);
+        }
+
+        fn get_letters(ref self:@TContractState, key:u128) -> Array<Letter> {
+            let mut letters = ArrayTrait::<Letter>::new();
+            let total_letters = self.letters_count.read();
+            let mut count = 1;
+
+            if total_letters > 0 {
+                loop {
+                    let letterz = self.letters.read(count);
+                    letter.append(letterz);
+                    count += 1;
+                    if count > total_letters {
+                        break;
+                    }
+                };
+            }
+            letters
         }
     }
 }
